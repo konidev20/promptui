@@ -166,7 +166,7 @@ func (p *Prompt) Run() (string, error) {
 		if err != nil {
 			prompt = render(p.Templates.invalid, p.Label)
 		} else {
-			prompt = render(p.Templates.valid, p.Label)
+			//prompt = render(p.Templates.valid, p.Label)
 			if p.IsConfirm {
 				prompt = render(p.Templates.prompt, p.Label)
 			}
