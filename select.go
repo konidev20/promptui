@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sync"
 	"text/tabwriter"
 	"text/template"
 
@@ -223,6 +224,9 @@ func (s *Select) RunCursorAt(cursorPos, scroll int) (int, string, error) {
 }
 
 func (s *Select) innerRun(cursorPos, scroll int, top rune) (int, string, error) {
+	mutex := new(sync.Mutex)
+	closing := false
+
 	c := &readline.Config{
 		Stdin:  s.Stdin,
 		Stdout: s.Stdout,
@@ -257,6 +261,13 @@ func (s *Select) innerRun(cursorPos, scroll int, top rune) (int, string, error) 
 	s.list.SetStart(scroll)
 
 	c.SetListener(func(line []rune, pos int, key rune) ([]rune, int, bool) {
+		mutex.Lock()
+		defer mutex.Unlock()
+
+		if closing {
+			return nil, 0, false
+		}
+
 		switch {
 		case key == KeyEnter:
 			return nil, 0, true
@@ -375,6 +386,10 @@ func (s *Select) innerRun(cursorPos, scroll int, top rune) (int, string, error) 
 		}
 
 	}
+
+	mutex.Lock()
+	defer mutex.Unlock()
+	closing = true
 
 	if err != nil {
 		if err.Error() == "Interrupt" {
