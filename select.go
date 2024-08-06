@@ -81,7 +81,7 @@ type Select struct {
 
 	// InterruptHandler is a function that handles interruptions (Ctrl+C) during the prompt execution.
 	// It takes an error as input and returns a string and an error.
-	InterruptHandler func(error) (int, string, error)
+	InterruptHandler func(error) error
 
 	Stdin  io.ReadCloser
 	Stdout io.WriteCloser
@@ -405,8 +405,8 @@ func (s *Select) innerRun(cursorPos, scroll int, top rune) (int, string, error) 
 		rl.Write([]byte(showCursor))
 		rl.Close()
 
-		if err == readline.ErrInterrupt {
-			return s.InterruptHandler(err)
+		if err == ErrInterrupt {
+			return 0, "", s.InterruptHandler(err)
 		}
 
 		return 0, "", err

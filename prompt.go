@@ -53,7 +53,7 @@ type Prompt struct {
 
 	// InterruptHandler is a function that handles interruptions (Ctrl+C) during the prompt execution.
 	// It takes an error as input and returns a string and an error.
-	InterruptHandler func(error) (string, error)
+	InterruptHandler func(error) error
 
 	Stdin  io.ReadCloser
 	Stdout io.WriteCloser
@@ -242,8 +242,8 @@ func (p *Prompt) Run() (string, error) {
 		rl.Write([]byte(showCursor))
 		rl.Close()
 
-		if err == readline.ErrInterrupt {
-			return p.InterruptHandler(err)
+		if err == ErrInterrupt {
+			return "", p.InterruptHandler(err)
 		}
 
 		return "", err
