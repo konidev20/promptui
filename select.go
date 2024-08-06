@@ -79,6 +79,10 @@ type Select struct {
 	// A function that determines how to render the cursor
 	Pointer Pointer
 
+	// InterruptHandler is a function that handles interruptions (Ctrl+C) during the prompt execution.
+	// It takes an error as input and returns a string and an error.
+	InterruptHandler func(error) error
+
 	Stdin  io.ReadCloser
 	Stdout io.WriteCloser
 }
@@ -400,6 +404,11 @@ func (s *Select) innerRun(cursorPos, scroll int, top rune) (int, string, error) 
 		sb.Flush()
 		rl.Write([]byte(showCursor))
 		rl.Close()
+
+		if err == ErrInterrupt {
+			return 0, "", s.InterruptHandler(err)
+		}
+
 		return 0, "", err
 	}
 
