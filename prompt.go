@@ -55,6 +55,10 @@ type Prompt struct {
 	// It takes an error as input and returns a string and an error.
 	InterruptHandler func(error) error
 
+	// CursorAtEnd sets whether the cursor should be placed at the end of the input field
+	// when the prompt is displayed. If false, the cursor will be at the beginning.
+	CursorAtEnd bool
+
 	Stdin  io.ReadCloser
 	Stdout io.WriteCloser
 }
@@ -168,6 +172,9 @@ func (p *Prompt) Run() (string, error) {
 	}
 	eraseDefault := input != "" && !p.AllowEdit
 	cur := NewCursor(input, p.Pointer, eraseDefault)
+	if p.CursorAtEnd {
+		cur.End()
+	}
 
 	listen := func(input []rune, pos int, key rune) ([]rune, int, bool) {
 		mutex.Lock()
